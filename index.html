@@ -15,10 +15,11 @@
 			var Circ = new CUB.Layer.Dynamic('Circulation','https://data.bordeaux-metropole.fr/wfs?key=268HITVXYZ&REQUEST=GetFeature&SERVICE=WFS&VERSION=1.1.0&TYPENAME=bm:SV_VEHIC_P&SRSNAME=EPSG:3945&MAXFEATURES=1000',{
 				/*layerName:'SV_VEHIC_P'*/
 				selectable: true});
-			var stops = new CUB.Layer.Dynamic('Arrets',"https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ",'SV_ARRET_P');
+			var stops = new CUB.Layer.Dynamic('Arrets',"https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ",'SV_ARRET_P',{
 				selectable: true});
 			var statique = new CUB.Layer.Static('Ma couche statique', 'https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ', ['TB_PARCR_P', 'TB_STVEL_P', 'CI_PARK_P']);
-	</script>
+			})
+			</script>
 	</head>
 	<body>
 		<div id="zone_carte" style="width: 75%; height: 75%; border: 1px solid black"></div>
