@@ -11,6 +11,13 @@ OpenStreetMap
   https://www.openstreetmap.org/copyright
   Data available under the Open Database License (ODbL).
 
+EOX Sentinel-2 cloudless (optional satellite basemap)
+  Tiles served by EOX IT Services GmbH
+  https://s2maps.eu
+  Contains modified Copernicus Sentinel data (2019–2020)
+  Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
+  https://creativecommons.org/licenses/by/4.0/
+
 Bordeaux Métropole / TBM open data
   Transport schedule and real-time feeds (GTFS, GTFS-RT via Mecatran)
   https://opendata.bordeaux-metropole.fr/

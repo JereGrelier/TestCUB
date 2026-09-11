@@ -80,10 +80,17 @@ body {
 
 .panel-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.55rem;
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
 }
 
 .panel-title-row h2 {
@@ -150,6 +157,10 @@ body {
   background: rgba(21, 101, 192, 0.08);
 }
 
+.route-item--highlighted {
+  box-shadow: inset 0 0 0 2px var(--tbm-blue);
+}
+
 .route-item input {
   width: 0.95rem;
   height: 0.95rem;
@@ -185,6 +196,12 @@ body {
 
 .toggle-row small {
   color: var(--muted);
+}
+
+.panel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 #status {
@@ -270,6 +287,44 @@ body {
 
 .leaflet-control-zoom a {
   color: var(--text);
+}
+
+.leaflet-bottom.leaflet-right {
+  bottom: 0.85rem;
+  right: 0.85rem;
+  z-index: 900;
+}
+
+.leaflet-control-layers,
+.leaflet-control-zoom {
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.marker-dimmed {
+  opacity: 0.22;
+  filter: grayscale(0.35);
+}
+
+.departures-title {
+  margin-top: 0.45rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.stop-departures {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stop-departures.loading {
+  font-style: italic;
+}
+
+.departure-row {
+  line-height: 1.35;
 }
 
 @media (max-width: 480px) {
