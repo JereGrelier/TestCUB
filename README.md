@@ -24,7 +24,7 @@ Hébergement compatible GitHub Pages (HTML/CSS/JS, sans build).
 ### GitHub Pages (recommandé)
 
 1. **Settings → Pages** du dépôt GitHub
-2. Source : déployer depuis la branche `main` (ou `cursor/tbm-live-map-b1f6` pour tester la PR), dossier `/ (root)`
+2. Source : déployer depuis la branche `main`, dossier `/ (root)` (pour prévisualiser une PR, activer Pages temporairement sur la branche de la PR)
 3. URL projet : `https://<user>.github.io/TestCUB/` (pages de projet)
 
 Le site utilise des **chemins relatifs** (`css/`, `js/`, `icons/`) — compatibles avec un sous-répertoire `/TestCUB/` sans balise `<base>`. Le fichier `.nojekyll` évite le traitement Jekyll.
@@ -41,7 +41,7 @@ Le site utilise des **chemins relatifs** (`css/`, `js/`, `icons/`) — compatibl
 ### Sécurité
 
 - Clé API **publique** open data uniquement (`config.example.js`) — pas de secret personnel dans git
-- CSP meta : scripts/styles `self` uniquement (Leaflet vendu dans `vendor/leaflet/`) ; API Mecatran en `connect-src` ; tuiles OSM en `img-src`
+- CSP meta : `script-src 'self'` ; `style-src 'self' 'unsafe-inline'` (requis par Leaflet et les styles inline des marqueurs) ; API Mecatran en `connect-src` ; tuiles OSM en `img-src` — Leaflet vendu dans `vendor/leaflet/`
 - `_headers` : CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (hôtes compatibles Netlify/Cloudflare)
 
 ### PWA légère

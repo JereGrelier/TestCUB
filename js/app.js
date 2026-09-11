@@ -21,6 +21,10 @@ const CONFIG = {
 
 const API_BASE = 'https://bdx.mecatran.com/utw/ws';
 const TRAM_ROUTE_TYPE = 0;
+const HEX_COLOR = /^[0-9A-Fa-f]{6}$/;
+const DEFAULT_ROUTE_COLOR = '#1565c0';
+const DEFAULT_ROUTE_TEXT_COLOR = '#ffffff';
+const VEHICLE_FETCH_TIMEOUT_MS = 15_000;
 
 const statusEl = document.getElementById('status');
 const stopsToggle = document.getElementById('stops-toggle');
@@ -36,6 +40,8 @@ let stopsLayer;
 let refreshTimer = null;
 let refreshInFlight = false;
 let refreshGeneration = 0;
+/** @type {string|null} */
+let routesError = null;
 /** @type {string|null} */
 let stopsError = null;
 /** @type {{ kind: string, message: string }} */
@@ -74,16 +80,29 @@ function routeLabel(routeId) {
   return route?.shortName || routeId;
 }
 
+function sanitizeHexColor(color, fallback) {
+  return typeof color === 'string' && HEX_COLOR.test(color) ? `#${color}` : fallback;
+}
+
 function routeColor(routeId) {
   const route = routesById.get(routeId);
-  const color = route?.color;
-  return color ? `#${color}` : '#1565c0';
+  return sanitizeHexColor(route?.color, DEFAULT_ROUTE_COLOR);
 }
 
 function routeTextColor(routeId) {
   const route = routesById.get(routeId);
-  const color = route?.textColor;
-  return color ? `#${color}` : '#ffffff';
+  return sanitizeHexColor(route?.textColor, DEFAULT_ROUTE_TEXT_COLOR);
+}
+
+function stopAccessibleName(stop) {
+  const name = stop.name || stop.id || 'inconnu';
+  return `Arrêt ${name}`;
+}
+
+function vehicleAccessibleName(vehicle) {
+  const line = routeLabel(vehicle.routeId);
+  const id = vehicle.vehicleId ?? 'inconnu';
+  return `Véhicule ligne ${line}, ${id}`;
 }
 
 function isTramVehicle(vehicle) {
@@ -113,6 +132,11 @@ function selectedRoutesSummary() {
 function renderStatus() {
   const parts = [];
   let kind = 'ok';
+
+  if (routesError) {
+    parts.push(`Erreur lignes : ${routesError}`);
+    kind = 'error';
+  }
 
   if (stopsError) {
     parts.push(`Erreur arrêts : ${stopsError}`);
@@ -176,6 +200,9 @@ function vehicleIcon(vehicle) {
   heading.style.transform = `rotate(${bearing}deg)`;
   heading.setAttribute('aria-hidden', 'true');
 
+  marker.setAttribute('role', 'img');
+  marker.setAttribute('aria-label', vehicleAccessibleName(vehicle));
+
   marker.appendChild(badge);
   marker.appendChild(heading);
   return L.divIcon({
@@ -198,17 +225,21 @@ function stopPopup(stop) {
   return el;
 }
 
-function stopIcon() {
+function stopIcon(stop) {
+  const el = document.createElement('div');
+  el.className = 'stop-icon';
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', stopAccessibleName(stop));
   return L.divIcon({
     className: '',
-    html: '<div class="stop-icon"></div>',
+    html: el.outerHTML,
     iconSize: [10, 10],
     iconAnchor: [5, 5],
   });
 }
 
-async function fetchJson(url, label) {
-  const response = await fetch(url);
+async function fetchJson(url, label, options = {}) {
+  const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`${label} : HTTP ${response.status}`);
   }
@@ -251,7 +282,12 @@ function renderStops() {
   for (const stop of stopsData) {
     if (!Number.isFinite(stop.latitude) || !Number.isFinite(stop.longitude)) continue;
     if (!stopMatchesFilter(stop)) continue;
-    L.marker([stop.latitude, stop.longitude], { icon: stopIcon() })
+    const stopName = stopAccessibleName(stop);
+    L.marker([stop.latitude, stop.longitude], {
+      icon: stopIcon(stop),
+      alt: stopName,
+      title: stopName,
+    })
       .bindPopup(stopPopup(stop))
       .addTo(stopsLayer);
     rendered += 1;
@@ -273,7 +309,12 @@ function renderVehicles(positions) {
   for (const vehicle of positions) {
     if (!Number.isFinite(vehicle.latitude) || !Number.isFinite(vehicle.longitude)) continue;
     if (!matchesRouteFilter(vehicle.routeId)) continue;
-    L.marker([vehicle.latitude, vehicle.longitude], { icon: vehicleIcon(vehicle) })
+    const vehicleName = vehicleAccessibleName(vehicle);
+    L.marker([vehicle.latitude, vehicle.longitude], {
+      icon: vehicleIcon(vehicle),
+      alt: vehicleName,
+      title: vehicleName,
+    })
       .bindPopup(vehiclePopup(vehicle))
       .addTo(vehicleLayer);
     rendered += 1;
@@ -341,7 +382,9 @@ async function refreshVehicles() {
   renderStatus();
 
   try {
-    const data = await fetchJson(apiUrl(`/realtime/vehicles/${CONFIG.feedKey}`), 'Véhicules');
+    const data = await fetchJson(apiUrl(`/realtime/vehicles/${CONFIG.feedKey}`), 'Véhicules', {
+      signal: AbortSignal.timeout(VEHICLE_FETCH_TIMEOUT_MS),
+    });
     if (generation !== refreshGeneration) return;
 
     lastVehiclePositions = data.vehiclePositions || [];
@@ -349,7 +392,8 @@ async function refreshVehicles() {
     renderVehicles(lastVehiclePositions);
   } catch (error) {
     if (generation === refreshGeneration) {
-      vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${error.message}` };
+      const detail = error.name === 'TimeoutError' ? 'délai dépassé' : error.message;
+      vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${detail}` };
     }
   } finally {
     refreshInFlight = false;
@@ -399,20 +443,20 @@ async function init() {
   vehiclesStatus = { kind: 'loading', message: 'Chargement des données…' };
   renderStatus();
 
-  const errors = [];
   try {
     await loadRoutes();
+    routesError = null;
   } catch (error) {
-    errors.push(`lignes : ${error.message}`);
+    routesError = error.message;
   }
 
   try {
     await loadStops();
+    stopsError = null;
   } catch (error) {
-    errors.push(`arrêts : ${error.message}`);
+    stopsError = error.message;
   }
 
-  stopsError = errors.length ? errors.join(' · ') : null;
   renderStatus();
   startVehicleRefresh();
 }
