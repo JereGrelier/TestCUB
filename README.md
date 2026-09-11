@@ -79,7 +79,7 @@ Puis remplacez dans `index.html` la ligne `config.example.js` par `config.js`. L
 | Tracés de lignes | [Mecatran GTFS routes + patterns](https://bdx.mecatran.com/utw/ws/gtfs/routes/bordeaux?includePatterns=true) (polylignes via séquences d’arrêts) | Statique |
 | Arrêts | [Mecatran GTFS stops](https://bdx.mecatran.com/utw/ws/gtfs/stops/bordeaux) | Statique (offre GTFS) |
 | Fond de carte plan | [OpenStreetMap](https://www.openstreetmap.org/) | — |
-| Fond satellite (option) | [EOX Sentinel-2 cloudless](https://s2maps.eu) (CC BY 4.0) | 2019–2020 |
+| Fond satellite (option) | [EOxCloudless Sentinel-2 2020](https://cloudless.eox.at) ([CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), usage non commercial) | 2020 |
 
 **Ne pas utiliser** le jeu DataHub `sv_vehic_p` pour le suivi live : il accuse un retard d’environ 2 heures.
 
@@ -99,7 +99,7 @@ Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte u
 - **Surlignage** : clic sur un arrêt ou véhicule surligne la/les ligne(s) associée(s), trace une polyligne (patterns GTFS) et atténue le reste ; effacer via le fond de carte ou le bouton dédié.
 - **Prochains passages** : chargés à l’ouverture du popup d’arrêt (API Mecatran `realtime/stop`).
 - **Véhicules** : pastilles colorées par ligne (bus / tram), badge numéro de ligne ; statuts traduits en français (`js/i18n.js`).
-- **Fonds de carte** : OSM par défaut ; satellite Sentinel-2 cloudless (EOX, CC BY 4.0) en option via le sélecteur en bas à droite.
+- **Fonds de carte** : OSM par défaut ; satellite EOxCloudless 2020 (EOX, CC BY-NC-SA 4.0, non commercial) en option via le sélecteur en bas à droite.
 - **Contrôles Leaflet** : zoom et basemap en bas à droite (hors du panneau latéral).
 
 ## Limites
@@ -108,18 +108,19 @@ Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte u
 - Pas de TripUpdates ni d’alertes service pour l’instant (extensions possibles via le même flux GTFS-RT).
 - Les positions dépendent de la qualité du GPS embarqué et du délai du diffuseur.
 - Tracés de ligne : polylignes dérivées des patterns GTFS (séquences d’arrêts) ; l’API KML/shapes Mecatran n’est pas exposée sur ce flux — le tracé suit les arrêts, pas la géométrie fine GTFS shapes.
-- Satellite EOX : imagerie 2019–2020, résolution limitée au zoom 15 ; pas d’imagerie aérienne propriétaire (Google, etc.).
+- Satellite EOX : imagerie Copernicus 2020, zoom ~14 max ; licence CC BY-NC-SA 4.0 (usage non commercial via WMTS gratuit) — voir [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
 ## Licence et attribution
 
-Le **code** de ce dépôt est sous [licence MIT](LICENSE) (© 2026 Jérémy Grelier).
+| Composant | Licence |
+|-----------|---------|
+| **Code source** (ce dépôt) | [MIT](LICENSE) — © 2026 Jérémy Grelier |
+| **Leaflet** 1.9.4 | [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) |
+| **Tuiles OSM** (fond plan) | [ODbL](https://www.openstreetmap.org/copyright) — © contributeurs OpenStreetMap |
+| **Imagerie satellite** (option) | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) — EOxCloudless / EOX IT Services GmbH |
+| **Données TBM** | [Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence) |
 
-Les **données et bibliothèques tierces** sont listées dans [NOTICE](NOTICE), notamment :
-
-- **OpenStreetMap** — tuiles © contributeurs ([ODbL](https://www.openstreetmap.org/copyright))
-- **Bordeaux Métropole / TBM** — open data transport ([Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence))
-- **Mecatran** — API GTFS-RT temps réel
-- **Leaflet** 1.9.4 — [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause), vendu dans `vendor/leaflet/`
+L’imagerie satellite **n’est pas** sous licence MIT. Détails, texte d’attribution obligatoire et conditions de redistribution : [NOTICE](NOTICE), [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
 ## Stack
 

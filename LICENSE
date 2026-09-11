@@ -2,6 +2,10 @@ MIT License
 
 Copyright (c) 2026 Jérémy Grelier
 
+This license applies to the TestCUB source code only. Third-party libraries,
+map tiles, satellite imagery, and transport data are licensed separately;
+see NOTICE and THIRD_PARTY_LICENSES.md.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
