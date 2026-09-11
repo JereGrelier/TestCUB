@@ -1,27 +1,38 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xml:lang="fr" xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<title>Carte simple - API CUB</title>
-        <script type="text/javascript" src="https://data.bordeaux-metropole.fr/api/cub.xjs?key=268HITVXYZ"></script>
-	<script type="text/javascript">
-
-		CUB.ready(function() {
-			CUB.init('zone_carte');
-			/*CUB.moveToExtent(new CUB.Extent(1411750, 4185585, 1420575, 4192045));
-			CUB.maxExtent(new CUB.Extent(1411750, 4185585, 1420575, 4192045));*/
-			new CUB.Layer.Background('Mon arrière-plan', CUB.Layer.Background.layerType.OPENSTREETMAP);
-			var commune = new CUB.Layer.Static('Commune','https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ', 'FV_COMMU_S');
-			var park = new CUB.Layer.Static('parking', 'https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ','TB_PARCR_P');
-			var Circ = new CUB.Layer.Dynamic('Circulation','https://data.bordeaux-metropole.fr/wfs?key=268HITVXYZ&REQUEST=GetFeature&SERVICE=WFS&VERSION=1.1.0&TYPENAME=bm:SV_VEHIC_P&SRSNAME=EPSG:3945&MAXFEATURES=1000',{
-				/*layerName:'SV_VEHIC_P'*/
-				selectable: true});
-			var stops = new CUB.Layer.Dynamic('Arrets',"https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ",'SV_ARRET_P',{
-				selectable: true});
-			var statique = new CUB.Layer.Static('Ma couche statique', 'https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ', ['TB_PARCR_P', 'TB_STVEL_P', 'CI_PARK_P']);
-			})
-			</script>
-	</head>
-	<body>
-		<div id="zone_carte" style="width: 75%; height: 75%; border: 1px solid black"></div>
-	</body>
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TBM — Carte temps réel</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="map" role="application" aria-label="Carte des transports TBM"></div>
+    <div id="toolbar">
+      <div class="panel">
+        <h1>TBM — Bordeaux Métropole</h1>
+        <label>
+          <input type="checkbox" id="stops-toggle" checked />
+          Afficher les arrêts
+        </label>
+      </div>
+      <div class="panel">
+        <div id="status" class="loading" aria-live="polite">Chargement…</div>
+      </div>
+    </div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <!-- Copiez js/config.example.js vers js/config.js pour personnaliser (optionnel). -->
+    <script src="js/config.example.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>
