@@ -1,0 +1,19 @@
+{
+  "name": "TBM — Carte temps réel",
+  "short_name": "TBM Live",
+  "description": "Positions véhicules et arrêts du réseau TBM, Bordeaux Métropole.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1565c0",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

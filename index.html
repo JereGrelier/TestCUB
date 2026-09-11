@@ -1,27 +1,65 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xml:lang="fr" xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<title>Carte simple - API CUB</title>
-        <script type="text/javascript" src="https://data.bordeaux-metropole.fr/api/cub.xjs?key=268HITVXYZ"></script>
-	<script type="text/javascript">
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Carte temps réel des transports TBM à Bordeaux Métropole : positions des véhicules et arrêts du réseau bus et tram."
+    />
+    <meta name="theme-color" content="#1565c0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://*.openstreetmap.org; connect-src 'self' https://bdx.mecatran.com; font-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'"
+    />
+    <title>TBM — Carte temps réel | Bordeaux Métropole</title>
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://bdx.mecatran.com" crossorigin />
+    <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=3" />
+    <link rel="stylesheet" href="css/style.css?v=3" />
+  </head>
+  <body>
+    <div id="map" role="application" aria-label="Carte interactive des transports TBM"></div>
+    <aside id="toolbar" role="region" aria-label="Contrôles de la carte">
+      <header class="panel panel-header">
+        <p class="eyebrow">Bordeaux Métropole</p>
+        <h1>TBM Live</h1>
+        <p class="subtitle">Véhicules en direct &amp; arrêts du réseau</p>
+      </header>
 
-		CUB.ready(function() {
-			CUB.init('zone_carte');
-			/*CUB.moveToExtent(new CUB.Extent(1411750, 4185585, 1420575, 4192045));
-			CUB.maxExtent(new CUB.Extent(1411750, 4185585, 1420575, 4192045));*/
-			new CUB.Layer.Background('Mon arrière-plan', CUB.Layer.Background.layerType.OPENSTREETMAP);
-			var commune = new CUB.Layer.Static('Commune','https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ', 'FV_COMMU_S');
-			var park = new CUB.Layer.Static('parking', 'https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ','TB_PARCR_P');
-			var Circ = new CUB.Layer.Dynamic('Circulation','https://data.bordeaux-metropole.fr/wfs?key=268HITVXYZ&REQUEST=GetFeature&SERVICE=WFS&VERSION=1.1.0&TYPENAME=bm:SV_VEHIC_P&SRSNAME=EPSG:3945&MAXFEATURES=1000',{
-				/*layerName:'SV_VEHIC_P'*/
-				selectable: true});
-			var stops = new CUB.Layer.Dynamic('Arrets',"https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ",'SV_ARRET_P',{
-				selectable: true});
-			var statique = new CUB.Layer.Static('Ma couche statique', 'https://data.bordeaux-metropole.fr/wms?key=268HITVXYZ', ['TB_PARCR_P', 'TB_STVEL_P', 'CI_PARK_P']);
-			})
-			</script>
-	</head>
-	<body>
-		<div id="zone_carte" style="width: 75%; height: 75%; border: 1px solid black"></div>
-	</body>
+      <section class="panel" aria-labelledby="route-filter-title">
+        <div class="panel-title-row">
+          <h2 id="route-filter-title">Lignes</h2>
+          <button type="button" id="route-reset" class="btn-text">Toutes les lignes</button>
+        </div>
+        <input
+          type="search"
+          id="route-search"
+          class="route-search"
+          placeholder="Rechercher une ligne…"
+          aria-label="Rechercher une ligne"
+          autocomplete="off"
+        />
+        <div id="route-list" class="route-list" role="group" aria-label="Sélection des lignes"></div>
+      </section>
+
+      <section class="panel panel-controls">
+        <label for="stops-toggle" class="toggle-row">
+          <input type="checkbox" id="stops-toggle" checked aria-describedby="status" />
+          <span>Afficher les arrêts <small>(zoom 14+)</small></span>
+        </label>
+      </section>
+
+      <footer class="panel panel-status">
+        <div id="status" class="loading" role="status" aria-live="polite">Chargement…</div>
+      </footer>
+    </aside>
+
+    <script src="vendor/leaflet/leaflet.js?v=3" defer></script>
+    <script src="js/config.example.js?v=3" defer></script>
+    <script src="js/app.js?v=3" defer></script>
+  </body>
 </html>
