@@ -11,15 +11,16 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://*.openstreetmap.org; connect-src 'self' https://bdx.mecatran.com; font-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://*.openstreetmap.org https://tiles.maps.eox.at; connect-src 'self' https://bdx.mecatran.com; font-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'"
     />
     <title>TBM — Carte temps réel | Bordeaux Métropole</title>
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://bdx.mecatran.com" crossorigin />
     <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=3" />
-    <link rel="stylesheet" href="css/style.css?v=3" />
+    <link rel="preconnect" href="https://tiles.maps.eox.at" crossorigin />
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=4" />
+    <link rel="stylesheet" href="css/style.css?v=4" />
   </head>
   <body>
     <div id="map" role="application" aria-label="Carte interactive des transports TBM"></div>
@@ -33,7 +34,10 @@
       <section class="panel" aria-labelledby="route-filter-title">
         <div class="panel-title-row">
           <h2 id="route-filter-title">Lignes</h2>
-          <button type="button" id="route-reset" class="btn-text">Toutes les lignes</button>
+          <div class="panel-actions">
+            <button type="button" id="highlight-clear" class="btn-text" hidden>Effacer surbrillance</button>
+            <button type="button" id="route-reset" class="btn-text">Toutes les lignes</button>
+          </div>
         </div>
         <input
           type="search"
@@ -46,7 +50,11 @@
         <div id="route-list" class="route-list" role="group" aria-label="Sélection des lignes"></div>
       </section>
 
-      <section class="panel panel-controls">
+      <section class="panel panel-controls" aria-label="Couches de la carte">
+        <label for="vehicles-toggle" class="toggle-row">
+          <input type="checkbox" id="vehicles-toggle" checked aria-describedby="status" />
+          <span>Afficher les véhicules</span>
+        </label>
         <label for="stops-toggle" class="toggle-row">
           <input type="checkbox" id="stops-toggle" checked aria-describedby="status" />
           <span>Afficher les arrêts <small>(zoom 14+)</small></span>
@@ -58,8 +66,9 @@
       </footer>
     </aside>
 
-    <script src="vendor/leaflet/leaflet.js?v=3" defer></script>
-    <script src="js/config.example.js?v=3" defer></script>
-    <script src="js/app.js?v=3" defer></script>
+    <script src="vendor/leaflet/leaflet.js?v=4" defer></script>
+    <script src="js/i18n.js?v=4" defer></script>
+    <script src="js/config.example.js?v=4" defer></script>
+    <script src="js/app.js?v=4" defer></script>
   </body>
 </html>

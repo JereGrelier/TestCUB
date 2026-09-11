@@ -36,12 +36,12 @@ Le site utilise des **chemins relatifs** (`css/`, `js/`, `icons/`) — compatibl
 | Ressource | Stratégie |
 |-----------|-----------|
 | `index.html` | Court (navigateur + `max-age=300` via `_headers` sur Netlify/Cloudflare) |
-| `css/`, `js/`, `vendor/`, `icons/` | `?v=3` dans `index.html` — incrémenter à chaque déploiement ; `immutable` via `_headers` |
+| `css/`, `js/`, `vendor/`, `icons/` | `?v=4` dans `index.html` — incrémenter à chaque déploiement ; `immutable` via `_headers` |
 
 ### Sécurité
 
 - Clé API **publique** open data uniquement (`config.example.js`) — pas de secret personnel dans git
-- CSP meta : `script-src 'self'` ; `style-src 'self' 'unsafe-inline'` (requis par Leaflet et les styles inline des marqueurs) ; API Mecatran en `connect-src` ; tuiles OSM en `img-src` — Leaflet vendu dans `vendor/leaflet/`
+- CSP meta : `script-src 'self'` ; `style-src 'self' 'unsafe-inline'` (requis par Leaflet et les styles inline des marqueurs) ; API Mecatran en `connect-src` ; tuiles OSM et satellite EOX en `img-src` — Leaflet vendu dans `vendor/leaflet/`
 - `_headers` : CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (hôtes compatibles Netlify/Cloudflare)
 
 ### PWA légère
@@ -75,8 +75,11 @@ Puis remplacez dans `index.html` la ligne `config.example.js` par `config.js`. L
 | Donnée | Source | Fraîcheur |
 |--------|--------|-----------|
 | Positions véhicules | [Mecatran GTFS-RT VehiclePositions](https://bdx.mecatran.com/utw/ws/realtime/vehicles/bordeaux?apiKey=opendata-bordeaux-metropole-flux-gtfs-rt) | Quasi temps réel (~quelques secondes) |
+| Prochains passages | [Mecatran realtime/stop](https://bdx.mecatran.com/utw/ws/realtime/stop/bordeaux/{stopId}) (GTFS stop id = MonitoringRef) | Temps réel / horaire théorique |
+| Tracés de lignes | [Mecatran GTFS routes + patterns](https://bdx.mecatran.com/utw/ws/gtfs/routes/bordeaux?includePatterns=true) (polylignes via séquences d’arrêts) | Statique |
 | Arrêts | [Mecatran GTFS stops](https://bdx.mecatran.com/utw/ws/gtfs/stops/bordeaux) | Statique (offre GTFS) |
-| Fond de carte | [OpenStreetMap](https://www.openstreetmap.org/) | — |
+| Fond de carte plan | [OpenStreetMap](https://www.openstreetmap.org/) | — |
+| Fond satellite (option) | [EOX Sentinel-2 cloudless](https://s2maps.eu) (CC BY 4.0) | 2019–2020 |
 
 **Ne pas utiliser** le jeu DataHub `sv_vehic_p` pour le suivi live : il accuse un retard d’environ 2 heures.
 
@@ -91,14 +94,21 @@ Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte u
 ## Interface
 
 - **Arrêts** : masqués en dessous du zoom 14 (configurable via `minStopZoom`) pour éviter la surcharge visuelle.
+- **Couches** : véhicules et arrêts activables indépendamment ; le filtre par ligne s’applique en plus.
 - **Filtre par ligne** : liste searchable multi-sélection ; filtre véhicules et arrêts associés.
-- **Véhicules** : pastilles colorées par ligne (bus / tram), badge numéro de ligne.
+- **Surlignage** : clic sur un arrêt ou véhicule surligne la/les ligne(s) associée(s), trace une polyligne (patterns GTFS) et atténue le reste ; effacer via le fond de carte ou le bouton dédié.
+- **Prochains passages** : chargés à l’ouverture du popup d’arrêt (API Mecatran `realtime/stop`).
+- **Véhicules** : pastilles colorées par ligne (bus / tram), badge numéro de ligne ; statuts traduits en français (`js/i18n.js`).
+- **Fonds de carte** : OSM par défaut ; satellite Sentinel-2 cloudless (EOX, CC BY 4.0) en option via le sélecteur en bas à droite.
+- **Contrôles Leaflet** : zoom et basemap en bas à droite (hors du panneau latéral).
 
 ## Limites
 
 - Rafraîchissement véhicules : ~12 s (configurable via `vehicleRefreshMs`).
 - Pas de TripUpdates ni d’alertes service pour l’instant (extensions possibles via le même flux GTFS-RT).
 - Les positions dépendent de la qualité du GPS embarqué et du délai du diffuseur.
+- Tracés de ligne : polylignes dérivées des patterns GTFS (séquences d’arrêts) ; l’API KML/shapes Mecatran n’est pas exposée sur ce flux — le tracé suit les arrêts, pas la géométrie fine GTFS shapes.
+- Satellite EOX : imagerie 2019–2020, résolution limitée au zoom 15 ; pas d’imagerie aérienne propriétaire (Google, etc.).
 
 ## Licence et attribution
 

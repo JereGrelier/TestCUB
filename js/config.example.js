@@ -6,4 +6,5 @@ window.TBM_CONFIG = {
   mapCenter: [44.8378, -0.5792],
   mapZoom: 12,
   minStopZoom: 14,
+  departureLookAheadSec: 7200,
 };
