@@ -21,12 +21,12 @@ Le site utilise des **chemins relatifs** (`css/`, `js/`, `icons/`) — compatibl
 | Ressource | Stratégie |
 |-----------|-----------|
 | `index.html` | Court (navigateur + `max-age=300` via `_headers` sur Netlify/Cloudflare) |
-| `css/`, `js/`, `icons/` | `?v=2` dans `index.html` — incrémenter à chaque déploiement ; `immutable` via `_headers` |
+| `css/`, `js/`, `vendor/`, `icons/` | `?v=3` dans `index.html` — incrémenter à chaque déploiement ; `immutable` via `_headers` |
 
 ### Sécurité
 
 - Clé API **publique** open data uniquement (`config.example.js`) — pas de secret personnel dans git
-- CSP meta : scripts limités à `self` + unpkg ; API Mecatran en `connect-src` ; tuiles OSM en `img-src`
+- CSP meta : scripts/styles `self` uniquement (Leaflet vendu dans `vendor/leaflet/`) ; API Mecatran en `connect-src` ; tuiles OSM en `img-src`
 - `_headers` : CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (hôtes compatibles Netlify/Cloudflare)
 
 ### PWA légère
@@ -73,6 +73,12 @@ Dataset Bordeaux Métropole : [Offres de services bus tramway GTFS / GTFS-RT](ht
 
 Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte utilise l’API GTFS Mecatran pour des identifiants cohérents avec le flux temps réel.
 
+## Interface
+
+- **Arrêts** : masqués en dessous du zoom 14 (configurable via `minStopZoom`) pour éviter la surcharge visuelle.
+- **Filtre par ligne** : liste searchable multi-sélection ; filtre véhicules et arrêts associés.
+- **Véhicules** : pastilles colorées par ligne (bus / tram), badge numéro de ligne.
+
 ## Limites
 
 - Rafraîchissement véhicules : ~12 s (configurable via `vehicleRefreshMs`).
@@ -86,5 +92,5 @@ Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte u
 
 ## Stack
 
-- [Leaflet](https://leafletjs.com/) + tuiles OSM
+- [Leaflet](https://leafletjs.com/) 1.9.4 (vendu localement) + tuiles OSM
 - JavaScript vanilla, sans dépendance de build

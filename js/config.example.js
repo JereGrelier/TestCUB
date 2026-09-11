@@ -5,4 +5,5 @@ window.TBM_CONFIG = {
   vehicleRefreshMs: 12_000,
   mapCenter: [44.8378, -0.5792],
   mapZoom: 12,
+  minStopZoom: 14,
 };
