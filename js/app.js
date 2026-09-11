@@ -94,8 +94,8 @@ const satelliteLayer = L.tileLayer(
   'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg',
   {
     attribution:
-      'Imagerie <a href="https://s2maps.eu">Sentinel-2 cloudless</a> © <a href="https://eox.at">EOX</a> / <a href="https://sentinel.esa.int">ESA</a> (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>)',
-    maxZoom: 15,
+      'EOxCloudless <a href="https://cloudless.eox.at">cloudless.eox.at</a> by <a href="https://eox.at">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2020) — <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>',
+    maxZoom: 14,
   },
 );
 
@@ -572,7 +572,7 @@ function renderVehicles(positions) {
   let rendered = 0;
   /** @type {L.Marker|null} */
   let popupMarker = null;
-  for (const vehicle of positions) {
+  for (const vehicle of list) {
     if (!Number.isFinite(vehicle.latitude) || !Number.isFinite(vehicle.longitude)) continue;
     if (!matchesRouteFilter(vehicle.routeId)) continue;
 

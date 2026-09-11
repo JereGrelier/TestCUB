@@ -1,7 +1,10 @@
 TestCUB — Carte TBM temps réel
 Copyright (c) 2026 Jérémy Grelier
 
-This project is licensed under the MIT License. See LICENSE.
+This project's source code is licensed under the MIT License. See LICENSE.
+
+Map tiles, satellite imagery, transport data, and vendored libraries are not
+MIT-licensed. See THIRD_PARTY_LICENSES.md for SPDX identifiers and full terms.
 
 Third-party components and data
 -----------------------------
@@ -11,12 +14,20 @@ OpenStreetMap
   https://www.openstreetmap.org/copyright
   Data available under the Open Database License (ODbL).
 
-EOX Sentinel-2 cloudless (optional satellite basemap)
-  Tiles served by EOX IT Services GmbH
-  https://s2maps.eu
-  Contains modified Copernicus Sentinel data (2019–2020)
-  Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
-  https://creativecommons.org/licenses/by/4.0/
+EOxCloudless Sentinel-2 cloudless 2020 (optional satellite basemap)
+  Product: EOxCloudless WM(T)S layer s2cloudless-2020_3857
+  Provider: EOX IT Services GmbH — https://eox.at
+  Service / terms: https://cloudless.eox.at/license-non-commercial
+  Data: contains modified Copernicus Sentinel data 2020
+  License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+          International (CC BY-NC-SA 4.0) — SPDX CC-BY-NC-SA-4.0
+          https://creativecommons.org/licenses/by-nc-sa/4.0/
+  Required attribution (shown in map when satellite is active):
+    "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH
+     (Contains modified Copernicus Sentinel data 2020)"
+  Zoom: EPSG:3857 tiles to ~zoom 14 (see EOX WMTS capabilities)
+  Note: free WMTS use is non-commercial for 2018–2025 layers per EOX.
+        See THIRD_PARTY_LICENSES.md for redistribution guidance.
 
 Bordeaux Métropole / TBM open data
   Transport schedule and real-time feeds (GTFS, GTFS-RT via Mecatran)
