@@ -13,7 +13,8 @@ Hébergement compatible GitHub Pages (HTML/CSS/JS, sans build).
 | Document | Description |
 |----------|-------------|
 | [LICENSE](LICENSE) | Code source sous licence MIT (© 2026 Jérémy Grelier) |
-| [NOTICE](NOTICE) | Attributions tierces (OSM, Bordeaux Métropole, Leaflet, Mecatran) |
+| [NOTICE](NOTICE) | Attributions tierces (OSM, Bordeaux Métropole, Leaflet, Mecatran, EOX) |
+| [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) | Licences tierces (SPDX, conditions satellite EOX, tuiles OSM) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution et PR |
 | [SECURITY.md](SECURITY.md) | Signalement de vulnérabilités |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Code de conduite |
