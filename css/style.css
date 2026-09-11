@@ -70,8 +70,6 @@ body {
 .vehicle-icon {
   width: 22px;
   height: 22px;
-  margin-left: -11px;
-  margin-top: -11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,8 +81,6 @@ body {
 .stop-icon {
   width: 8px;
   height: 8px;
-  margin-left: -4px;
-  margin-top: -4px;
   border-radius: 50%;
   background: #1565c0;
   border: 1px solid #fff;

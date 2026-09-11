@@ -25,8 +25,16 @@ const stopsToggle = document.getElementById('stops-toggle');
 let vehicleLayer;
 /** @type {L.LayerGroup|null} */
 let stopsLayer = null;
-/** @type {ReturnType<typeof setInterval>|null} */
+/** @type {ReturnType<typeof setTimeout>|null} */
 let refreshTimer = null;
+/** @type {boolean} */
+let refreshInFlight = false;
+/** @type {number} */
+let refreshGeneration = 0;
+/** @type {string|null} */
+let stopsError = null;
+/** @type {{ kind: string, message: string }} */
+let vehiclesStatus = { kind: 'loading', message: 'Chargement des véhicules…' };
 
 const map = L.map('map', { zoomControl: true }).setView(CONFIG.mapCenter, CONFIG.mapZoom);
 
@@ -44,35 +52,70 @@ function apiUrl(path) {
   return url.toString();
 }
 
-function setStatus(kind, message) {
+function renderStatus() {
+  const parts = [];
+  let kind = 'ok';
+
+  if (stopsError) {
+    parts.push(`Erreur arrêts : ${stopsError}`);
+    kind = 'error';
+  }
+
+  parts.push(vehiclesStatus.message);
+
+  if (vehiclesStatus.kind === 'error') {
+    kind = 'error';
+  } else if (vehiclesStatus.kind === 'loading' && kind !== 'error') {
+    kind = 'loading';
+  }
+
   statusEl.className = kind;
-  statusEl.textContent = message;
+  statusEl.textContent = parts.join(' · ');
 }
 
 function formatTime(date) {
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+function appendLine(parent, text) {
+  const line = document.createElement('div');
+  line.textContent = text;
+  parent.appendChild(line);
+}
+
 function vehiclePopup(v) {
-  const route = v.routeId ? `Ligne ${v.routeId}` : 'Ligne inconnue';
-  const status = v.stopStatus ? `<br>Statut : ${v.stopStatus}` : '';
-  const stop = v.stopId ? `<br>Arrêt : ${v.stopId}` : '';
-  return `<strong>${route}</strong>Véhicule : ${v.vehicleId}${stop}${status}`;
+  const el = document.createElement('div');
+  const title = document.createElement('strong');
+  title.textContent = v.routeId ? `Ligne ${v.routeId}` : 'Ligne inconnue';
+  el.appendChild(title);
+  appendLine(el, `Véhicule : ${v.vehicleId ?? ''}`);
+  if (v.stopId) appendLine(el, `Arrêt : ${v.stopId}`);
+  if (v.stopStatus) appendLine(el, `Statut : ${v.stopStatus}`);
+  return el;
 }
 
 function vehicleIcon(bearing) {
   const rotation = Number.isFinite(bearing) ? bearing : 0;
+  const icon = document.createElement('div');
+  icon.className = 'vehicle-icon';
+  icon.style.transform = `rotate(${rotation}deg)`;
+  icon.textContent = '🚌';
   return L.divIcon({
     className: '',
-    html: `<div class="vehicle-icon" style="transform: rotate(${rotation}deg)">🚌</div>`,
+    html: icon.outerHTML,
     iconSize: [22, 22],
     iconAnchor: [11, 11],
   });
 }
 
 function stopPopup(stop) {
-  const code = stop.code ? `<br>Code : ${stop.code}` : '';
-  return `<strong>${stop.name || stop.id}</strong>ID : ${stop.id}${code}`;
+  const el = document.createElement('div');
+  const title = document.createElement('strong');
+  title.textContent = stop.name || stop.id || '';
+  el.appendChild(title);
+  appendLine(el, `ID : ${stop.id ?? ''}`);
+  if (stop.code) appendLine(el, `Code : ${stop.code}`);
+  return el;
 }
 
 async function fetchJson(url, label) {
@@ -103,9 +146,17 @@ async function loadStops() {
 }
 
 async function refreshVehicles() {
-  setStatus('loading', 'Actualisation des véhicules…');
+  if (refreshInFlight || document.hidden) return;
+
+  refreshInFlight = true;
+  const generation = ++refreshGeneration;
+  vehiclesStatus = { kind: 'loading', message: 'Actualisation des véhicules…' };
+  renderStatus();
+
   try {
     const data = await fetchJson(apiUrl(`/realtime/vehicles/${CONFIG.feedKey}`), 'Véhicules');
+    if (generation !== refreshGeneration) return;
+
     vehicleLayer.clearLayers();
 
     const positions = data.vehiclePositions || [];
@@ -116,16 +167,29 @@ async function refreshVehicles() {
         .addTo(vehicleLayer);
     }
 
-    setStatus('ok', `${positions.length} véhicules — ${formatTime(new Date())}`);
+    vehiclesStatus = { kind: 'ok', message: `${positions.length} véhicules — ${formatTime(new Date())}` };
   } catch (error) {
-    setStatus('error', `Erreur véhicules : ${error.message}`);
+    if (generation === refreshGeneration) {
+      vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${error.message}` };
+    }
+  } finally {
+    refreshInFlight = false;
+    if (generation === refreshGeneration) {
+      renderStatus();
+      scheduleVehicleRefresh();
+    }
   }
 }
 
+function scheduleVehicleRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer);
+  if (document.hidden) return;
+  refreshTimer = setTimeout(refreshVehicles, CONFIG.vehicleRefreshMs);
+}
+
 function startVehicleRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
+  if (refreshTimer) clearTimeout(refreshTimer);
   refreshVehicles();
-  refreshTimer = setInterval(refreshVehicles, CONFIG.vehicleRefreshMs);
 }
 
 stopsToggle.addEventListener('change', () => {
@@ -137,15 +201,28 @@ stopsToggle.addEventListener('change', () => {
   }
 });
 
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    refreshTimer = null;
+  } else {
+    scheduleVehicleRefresh();
+    if (!refreshInFlight) refreshVehicles();
+  }
+});
+
 async function init() {
-  setStatus('loading', 'Chargement des arrêts…');
+  vehiclesStatus = { kind: 'loading', message: 'Chargement des arrêts…' };
+  renderStatus();
+
   try {
     await loadStops();
-    startVehicleRefresh();
+    stopsError = null;
   } catch (error) {
-    setStatus('error', `Erreur arrêts : ${error.message}`);
-    startVehicleRefresh();
+    stopsError = error.message;
   }
+
+  startVehicleRefresh();
 }
 
 init();
