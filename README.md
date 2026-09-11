@@ -4,6 +4,35 @@ Carte web statique des transports en commun TBM (Bordeaux Métropole) : arrêts 
 
 Hébergement compatible GitHub Pages (HTML/CSS/JS, sans build).
 
+## Déploiement web
+
+### GitHub Pages (recommandé)
+
+1. **Settings → Pages** du dépôt GitHub
+2. Source : déployer depuis la branche `main` (ou `cursor/tbm-live-map-b1f6` pour tester la PR), dossier `/ (root)`
+3. URL projet : `https://<user>.github.io/TestCUB/` (pages de projet)
+
+Le site utilise des **chemins relatifs** (`css/`, `js/`, `icons/`) — compatibles avec un sous-répertoire `/TestCUB/` sans balise `<base>`. Le fichier `.nojekyll` évite le traitement Jekyll.
+
+**Limites GitHub Pages :** pas d’en-têtes HTTP personnalisés. La CSP et la politique de referrer sont définies via balises `<meta>` dans `index.html`. Pour des en-têtes HTTP (cache, CSP stricte), voir Netlify/Cloudflare Pages et le fichier `_headers` fourni.
+
+### Cache et versions
+
+| Ressource | Stratégie |
+|-----------|-----------|
+| `index.html` | Court (navigateur + `max-age=300` via `_headers` sur Netlify/Cloudflare) |
+| `css/`, `js/`, `icons/` | `?v=2` dans `index.html` — incrémenter à chaque déploiement ; `immutable` via `_headers` |
+
+### Sécurité
+
+- Clé API **publique** open data uniquement (`config.example.js`) — pas de secret personnel dans git
+- CSP meta : scripts limités à `self` + unpkg ; API Mecatran en `connect-src` ; tuiles OSM en `img-src`
+- `_headers` : CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (hôtes compatibles Netlify/Cloudflare)
+
+### PWA légère
+
+`manifest.webmanifest` + `icons/icon.svg` permettent l’ajout à l’écran d’accueil. Pas de service worker (volontairement, pour éviter la complexité du cache offline).
+
 ## Lancer en local
 
 ```bash

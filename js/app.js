@@ -160,14 +160,16 @@ async function refreshVehicles() {
     vehicleLayer.clearLayers();
 
     const positions = data.vehiclePositions || [];
+    let rendered = 0;
     for (const v of positions) {
       if (!Number.isFinite(v.latitude) || !Number.isFinite(v.longitude)) continue;
       L.marker([v.latitude, v.longitude], { icon: vehicleIcon(v.bearing) })
         .bindPopup(vehiclePopup(v))
         .addTo(vehicleLayer);
+      rendered += 1;
     }
 
-    vehiclesStatus = { kind: 'ok', message: `${positions.length} véhicules — ${formatTime(new Date())}` };
+    vehiclesStatus = { kind: 'ok', message: `${rendered} véhicules — ${formatTime(new Date())}` };
   } catch (error) {
     if (generation === refreshGeneration) {
       vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${error.message}` };
