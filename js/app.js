@@ -25,6 +25,7 @@ const HEX_COLOR = /^[0-9A-Fa-f]{6}$/;
 const DEFAULT_ROUTE_COLOR = '#1565c0';
 const DEFAULT_ROUTE_TEXT_COLOR = '#ffffff';
 const VEHICLE_FETCH_TIMEOUT_MS = 15_000;
+const STATIC_FETCH_TIMEOUT_MS = 30_000;
 
 const statusEl = document.getElementById('status');
 const stopsToggle = document.getElementById('stops-toggle');
@@ -56,6 +57,8 @@ const activeRouteIds = new Set();
 let stopsData = [];
 /** @type {object[]} */
 let lastVehiclePositions = [];
+/** @type {Date|null} */
+let lastVehicleFetchAt = null;
 let stopsZoomHint = '';
 
 const map = L.map('map', { zoomControl: true }).setView(CONFIG.mapCenter, CONFIG.mapZoom);
@@ -238,16 +241,21 @@ function stopIcon(stop) {
   });
 }
 
-async function fetchJson(url, label, options = {}) {
+function formatFetchError(error) {
+  if (error.name === 'TimeoutError') return 'délai dépassé';
+  return error.message;
+}
+
+async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
-    throw new Error(`${label} : HTTP ${response.status}`);
+    throw new Error(`HTTP ${response.status}`);
   }
   return response.json();
 }
 
-async function loadRoutes() {
-  const routes = await fetchJson(apiUrl(`/gtfs/routes/${CONFIG.feedKey}`), 'Lignes');
+async function loadRoutes(options = {}) {
+  const routes = await fetchJson(apiUrl(`/gtfs/routes/${CONFIG.feedKey}`), options);
   routesById.clear();
   for (const route of routes) {
     routesById.set(route.id, route);
@@ -255,9 +263,9 @@ async function loadRoutes() {
   renderRouteList();
 }
 
-async function loadStops() {
+async function loadStops(options = {}) {
   const url = apiUrl(`/gtfs/stops/${CONFIG.feedKey}?includeStations=false&includeRoutes=true`);
-  stopsData = await fetchJson(url, 'Arrêts');
+  stopsData = await fetchJson(url, options);
   renderStops();
 }
 
@@ -320,7 +328,8 @@ function renderVehicles(positions) {
     rendered += 1;
   }
 
-  vehiclesStatus = { kind: 'ok', message: `${rendered} véhicules — ${formatTime(new Date())}` };
+  const timeLabel = lastVehicleFetchAt ? formatTime(lastVehicleFetchAt) : '—';
+  vehiclesStatus = { kind: 'ok', message: `${rendered} véhicules — ${timeLabel}` };
   renderStatus();
 }
 
@@ -365,12 +374,34 @@ function renderRouteList() {
   }
 }
 
-function updateActiveRoutes(positions) {
-  activeRouteIds.clear();
-  for (const vehicle of positions) {
-    if (vehicle.routeId) activeRouteIds.add(vehicle.routeId);
+function activeRouteSetsEqual(next) {
+  if (next.size !== activeRouteIds.size) return false;
+  for (const routeId of next) {
+    if (!activeRouteIds.has(routeId)) return false;
   }
-  renderRouteList();
+  return true;
+}
+
+function updateRouteListActiveState() {
+  for (const item of routeListEl.querySelectorAll('.route-item')) {
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    if (!checkbox) continue;
+    item.classList.toggle('route-item--active', activeRouteIds.has(checkbox.value));
+  }
+}
+
+function updateActiveRoutes(positions) {
+  const nextActiveRouteIds = new Set();
+  for (const vehicle of positions) {
+    if (vehicle.routeId) nextActiveRouteIds.add(vehicle.routeId);
+  }
+  if (activeRouteSetsEqual(nextActiveRouteIds)) return;
+
+  activeRouteIds.clear();
+  for (const routeId of nextActiveRouteIds) {
+    activeRouteIds.add(routeId);
+  }
+  updateRouteListActiveState();
 }
 
 async function refreshVehicles() {
@@ -382,18 +413,18 @@ async function refreshVehicles() {
   renderStatus();
 
   try {
-    const data = await fetchJson(apiUrl(`/realtime/vehicles/${CONFIG.feedKey}`), 'Véhicules', {
+    const data = await fetchJson(apiUrl(`/realtime/vehicles/${CONFIG.feedKey}`), {
       signal: AbortSignal.timeout(VEHICLE_FETCH_TIMEOUT_MS),
     });
     if (generation !== refreshGeneration) return;
 
+    lastVehicleFetchAt = new Date();
     lastVehiclePositions = data.vehiclePositions || [];
     updateActiveRoutes(lastVehiclePositions);
     renderVehicles(lastVehiclePositions);
   } catch (error) {
     if (generation === refreshGeneration) {
-      const detail = error.name === 'TimeoutError' ? 'délai dépassé' : error.message;
-      vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${detail}` };
+      vehiclesStatus = { kind: 'error', message: `Erreur véhicules : ${formatFetchError(error)}` };
     }
   } finally {
     refreshInFlight = false;
@@ -442,23 +473,17 @@ document.addEventListener('visibilitychange', () => {
 async function init() {
   vehiclesStatus = { kind: 'loading', message: 'Chargement des données…' };
   renderStatus();
-
-  try {
-    await loadRoutes();
-    routesError = null;
-  } catch (error) {
-    routesError = error.message;
-  }
-
-  try {
-    await loadStops();
-    stopsError = null;
-  } catch (error) {
-    stopsError = error.message;
-  }
-
-  renderStatus();
   startVehicleRefresh();
+
+  const staticFetchOptions = { signal: AbortSignal.timeout(STATIC_FETCH_TIMEOUT_MS) };
+  const [routesResult, stopsResult] = await Promise.allSettled([
+    loadRoutes(staticFetchOptions),
+    loadStops(staticFetchOptions),
+  ]);
+
+  routesError = routesResult.status === 'fulfilled' ? null : formatFetchError(routesResult.reason);
+  stopsError = stopsResult.status === 'fulfilled' ? null : formatFetchError(stopsResult.reason);
+  renderStatus();
 }
 
 init();

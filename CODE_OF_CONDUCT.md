@@ -27,7 +27,7 @@ Project maintainers may remove, edit, or reject comments, commits, issues, and o
 
 ## Reporting
 
-Report unacceptable behavior to the repository owner via [GitHub Security Advisories](https://github.com/JereGrelier/TestCUB/security/advisories/new) or a private GitHub issue directed to the maintainer if the report is not security-related.
+Report security-related concerns via [GitHub Security Advisories](https://github.com/JereGrelier/TestCUB/security/advisories/new). For other Code of Conduct reports, contact the repository maintainer through their [GitHub profile](https://github.com/JereGrelier) (use a private channel such as email if listed there).
 
 ## Attribution
 
