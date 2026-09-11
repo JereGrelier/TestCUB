@@ -1,0 +1,31 @@
+TestCUB — Carte TBM temps réel
+Copyright (c) 2026 Jérémy Grelier
+
+This project is licensed under the MIT License. See LICENSE.
+
+Third-party components and data
+-----------------------------
+
+OpenStreetMap
+  Map tiles © OpenStreetMap contributors
+  https://www.openstreetmap.org/copyright
+  Data available under the Open Database License (ODbL).
+
+Bordeaux Métropole / TBM open data
+  Transport schedule and real-time feeds (GTFS, GTFS-RT via Mecatran)
+  https://opendata.bordeaux-metropole.fr/
+  Licence Ouverte 2.0 — https://www.etalab.gouv.fr/licence-ouverte-open-licence
+
+Mecatran (Urbiplan web services)
+  Real-time vehicle positions and GTFS API endpoints
+  https://pub.mecatran.com/docs/urbiplan_dev_guide_en.html
+
+Leaflet 1.9.4
+  https://leafletjs.com/
+  BSD 2-Clause License — https://opensource.org/licenses/BSD-2-Clause
+  Vendored in vendor/leaflet/
+
+Disclaimer
+----------
+This application is an independent open-source project. It is not affiliated with,
+endorsed by, or operated by TBM, Keolis, or Bordeaux Métropole.

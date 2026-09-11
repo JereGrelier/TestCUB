@@ -1,8 +1,23 @@
 # TestCUB — Carte TBM temps réel
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Carte web statique des transports en commun TBM (Bordeaux Métropole) : arrêts et positions véhicules en quasi temps réel.
 
 Hébergement compatible GitHub Pages (HTML/CSS/JS, sans build).
+
+> **Avertissement** — Projet open source indépendant. **Non affilié** à TBM, Keolis ou Bordeaux Métropole. Les données affichées proviennent de flux publics ; l’application officielle reste la référence pour l’information voyageur.
+
+## Projet
+
+| Document | Description |
+|----------|-------------|
+| [LICENSE](LICENSE) | Code source sous licence MIT (© 2026 Jérémy Grelier) |
+| [NOTICE](NOTICE) | Attributions tierces (OSM, Bordeaux Métropole, Leaflet, Mecatran) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution et PR |
+| [SECURITY.md](SECURITY.md) | Signalement de vulnérabilités |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Code de conduite |
+| [security.txt](security.txt) | Contact sécurité (RFC 9116, racine site statique) |
 
 ## Déploiement web
 
@@ -87,8 +102,14 @@ Les arrêts peuvent aussi être obtenus via l’ODS `sv_arret_p` ; cette carte u
 
 ## Licence et attribution
 
-- Données transport : **Bordeaux Métropole** — [Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence)
-- Cartographie : **© OpenStreetMap** contributeurs
+Le **code** de ce dépôt est sous [licence MIT](LICENSE) (© 2026 Jérémy Grelier).
+
+Les **données et bibliothèques tierces** sont listées dans [NOTICE](NOTICE), notamment :
+
+- **OpenStreetMap** — tuiles © contributeurs ([ODbL](https://www.openstreetmap.org/copyright))
+- **Bordeaux Métropole / TBM** — open data transport ([Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence))
+- **Mecatran** — API GTFS-RT temps réel
+- **Leaflet** 1.9.4 — [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause), vendu dans `vendor/leaflet/`
 
 ## Stack
 

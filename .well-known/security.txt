@@ -1,0 +1,5 @@
+Contact: https://github.com/JereGrelier/TestCUB/security/advisories/new
+Policy: https://github.com/JereGrelier/TestCUB/blob/main/SECURITY.md
+Preferred-Languages: fr, en
+Expires: 2027-09-11T23:59:59.000Z
+Canonical: https://jeregrelier.github.io/TestCUB/.well-known/security.txt
