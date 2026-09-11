@@ -74,8 +74,13 @@ let lastVehiclePositions = [];
 let lastVehicleFetchAt = null;
 let stopsZoomHint = '';
 let patternsLoadPromise = null;
+let polylineRenderGeneration = 0;
 /** @type {string|null} */
 let pendingPopupStopId = null;
+/** @type {string|null} */
+let pendingPopupVehicleId = null;
+/** @type {string|null} */
+let programmaticPopupStopId = null;
 
 const map = L.map('map', { zoomControl: false }).setView(CONFIG.mapCenter, CONFIG.mapZoom);
 
@@ -168,6 +173,10 @@ function isHighlighted(routeId) {
 
 function isDimmed(routeId) {
   return highlightedRouteIds.size > 0 && !highlightedRouteIds.has(routeId);
+}
+
+function stopServesHighlight(routeIds) {
+  return routeIds.some((id) => isHighlighted(id));
 }
 
 function selectedRoutesSummary() {
@@ -408,10 +417,16 @@ function patternLatLngs(pattern) {
 }
 
 async function renderRoutePolylines() {
-  routeLayer.clearLayers();
-  if (highlightedRouteIds.size === 0) return;
+  const generation = ++polylineRenderGeneration;
+  if (highlightedRouteIds.size === 0) {
+    routeLayer.clearLayers();
+    return;
+  }
 
   await ensureRoutePatterns();
+  if (generation !== polylineRenderGeneration) return;
+
+  routeLayer.clearLayers();
 
   for (const routeId of highlightedRouteIds) {
     const patterns = patternsByRouteId.get(routeId);
@@ -450,11 +465,13 @@ function clearHighlight() {
   setHighlight([]);
 }
 
-function onMarkerActivate(routeIds, event, stopId = null) {
+function onMarkerActivate(routeIds, event, stopId = null, vehicleId = null) {
   L.DomEvent.stopPropagation(event);
   pendingPopupStopId = stopId;
+  pendingPopupVehicleId = vehicleId;
   setHighlight(routeIds);
   pendingPopupStopId = null;
+  pendingPopupVehicleId = null;
 }
 
 async function loadRoutes(options = {}) {
@@ -474,6 +491,7 @@ async function loadStops(options = {}) {
     stopsById.set(stop.id, stop);
   }
   renderStops();
+  if (highlightedRouteIds.size > 0) renderRoutePolylines();
 }
 
 function renderStops() {
@@ -508,18 +526,25 @@ function renderStops() {
       icon: stopIcon(stop, dimmed),
       alt: stopName,
       title: stopName,
-      zIndexOffset: dimmed ? -100 : isHighlighted(routeIds[0]) ? 200 : 0,
+      zIndexOffset: dimmed ? -100 : stopServesHighlight(routeIds) ? 200 : 0,
     })
       .bindPopup(popupParts.el)
       .addTo(stopsLayer);
 
     marker.on('click', (event) => onMarkerActivate(routeIds, event, stop.id));
-    marker.on('popupopen', () => loadStopDepartures(stop.id, popupParts.deps));
+    marker.on('popupopen', () => {
+      if (programmaticPopupStopId !== stop.id) return;
+      programmaticPopupStopId = null;
+      loadStopDepartures(stop.id, popupParts.deps);
+    });
     if (pendingPopupStopId === stop.id) popupMarker = marker;
     rendered += 1;
   }
 
-  if (popupMarker) popupMarker.openPopup();
+  if (popupMarker) {
+    programmaticPopupStopId = pendingPopupStopId;
+    popupMarker.openPopup();
+  }
 
   if (rendered > 0) {
     stopsLayer.addTo(map);
@@ -531,6 +556,7 @@ function renderStops() {
 }
 
 function renderVehicles(positions) {
+  const list = Array.isArray(positions) ? positions : lastVehiclePositions;
   vehicleLayer.clearLayers();
 
   if (!vehiclesToggle.checked) {
@@ -544,6 +570,8 @@ function renderVehicles(positions) {
   if (!map.hasLayer(vehicleLayer)) vehicleLayer.addTo(map);
 
   let rendered = 0;
+  /** @type {L.Marker|null} */
+  let popupMarker = null;
   for (const vehicle of positions) {
     if (!Number.isFinite(vehicle.latitude) || !Number.isFinite(vehicle.longitude)) continue;
     if (!matchesRouteFilter(vehicle.routeId)) continue;
@@ -560,10 +588,13 @@ function renderVehicles(positions) {
       .addTo(vehicleLayer);
 
     marker.on('click', (event) => {
-      if (vehicle.routeId) onMarkerActivate([vehicle.routeId], event);
+      if (vehicle.routeId) onMarkerActivate([vehicle.routeId], event, null, vehicle.vehicleId ?? null);
     });
+    if (pendingPopupVehicleId && vehicle.vehicleId === pendingPopupVehicleId) popupMarker = marker;
     rendered += 1;
   }
+
+  if (popupMarker) popupMarker.openPopup();
 
   const timeLabel = lastVehicleFetchAt ? formatTime(lastVehicleFetchAt) : '—';
   vehiclesStatus = { kind: 'ok', message: `${rendered} véhicules — ${timeLabel}` };
@@ -705,7 +736,7 @@ routeResetEl.addEventListener('click', () => {
 highlightClearEl.addEventListener('click', clearHighlight);
 
 stopsToggle.addEventListener('change', renderStops);
-vehiclesToggle.addEventListener('change', renderVehicles);
+vehiclesToggle.addEventListener('change', () => renderVehicles(lastVehiclePositions));
 
 map.on('zoomend', renderStops);
 map.on('click', clearHighlight);
